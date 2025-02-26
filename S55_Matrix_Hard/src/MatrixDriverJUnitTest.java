@@ -1,4 +1,3 @@
-/*
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -11,16 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class MatrixDriverJUnitTest {
 
     // Invalid Constructor tests throwing illegal arguments
-    @ParameterizedTest(name="run #{index} with [{arguments}]")
-    @CsvSource({"{}"})
-    void invalidConstructor(double[][] data){
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new Matrix(2,2));
-    }
 
     @ParameterizedTest(name="run #{index} with [{arguments}]")
-    @CsvSource({"0,0"})
+    @CsvSource({"-1,-1"})
     void invalidConstructor2Arguments(int rows, int cols){
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new Matrix(2,2));
+        Assertions.assertThrows(NegativeArraySizeException.class, () -> new Matrix(rows,cols));
     }
 
     @Test
@@ -30,9 +24,9 @@ public class MatrixDriverJUnitTest {
         Matrix m1 = new Matrix(2,2);
         Matrix m2 = new Matrix(d);
 
-        assertEquals(m0.toString(), "[0.0, 0.0]\n[0.0, 0.0]");
-        assertEquals(m1.toString(), "[0.0, 0.0]\n[0.0, 0.0]");
-        assertEquals(m2.toString(), "[1.0, 2.0, 3.0]\n[3.0, 2.0, 1.0]");
+        assertEquals(m0.toString(), "[[0.0, 0.0], [0.0, 0.0]]");
+        assertEquals(m1.toString(), "[[0.0, 0.0], [0.0, 0.0]]");
+        assertEquals(m2.toString(), "[[1.0, 2.0, 3.0], [3.0, 2.0, 1.0]]");
     }
 
     @Test
@@ -46,20 +40,14 @@ public class MatrixDriverJUnitTest {
         // Deep copy -> address of original Matrix
         original.setData(b);
 
-        assertEquals(copy.toString(), "[0.0, 0.0, 0.0]\n[0.0, 0.0, 0.0]");
-    }
-
-    // Variable parameter setup
-    @ParameterizedTest(name="run #{index} with [{arguments}]")
-    @CsvSource({"{}"})
-    void invalidSetData(double[][] data){
-        Assertions.assertThrows(IllegalArgumentException.class, () -> m.setData(data));
+        assertEquals(copy.toString(), "[[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]");
     }
 
     @ParameterizedTest(name="run #{index} with [{arguments}]")
     @CsvSource({"-1,-1,-1"})
     void invalidSetData(int rows, int cols, int data){
-        Assertions.assertThrows(IllegalArgumentException.class, () -> m.setData(int rows, int cols, int data));
+        Matrix m = new Matrix();
+        Assertions.assertThrows(ArrayIndexOutOfBoundsException.class, () -> m.setData(rows, cols, data));
     }
 
 
@@ -68,13 +56,13 @@ public class MatrixDriverJUnitTest {
 
     @Test
     public void validSetters(){
-        Matrix m = new Matrix();
-        assertEquals(m.toString(), "[0.0, 0.0]\n[0.0, 0.0]");
+        Matrix m = new Matrix(2,2);
+        assertEquals(m.toString(), "[[0.0, 0.0], [0.0, 0.0]]");
 
         m.setData(0,0,1);
         m.setData(1,1,1);
 
-        assertEquals(m.toString(), "[1.0, 0.0]\n[1.0, 0.0]");
+        assertEquals(m.toString(), "[[1.0, 0.0], [0.0, 1.0]]");
     }
 
     @Test
@@ -105,7 +93,7 @@ public class MatrixDriverJUnitTest {
 
     @Test
     public void addTest(){
-        double[][] d = {{1,2,3},{3,2,1}}
+        double[][] d = {{1,2,3},{3,2,1}};
         double[][] b = {{0.1,0.2,0.3},{0.3,0.2,0.1}};
 
         Matrix m = new Matrix(d);
@@ -115,8 +103,20 @@ public class MatrixDriverJUnitTest {
     }
 
     @Test
+    public void addInPlaceTest(){
+        double[][] d = {{1,2,3},{3,2,1}};
+        double[][] b = {{0.1,0.2,0.3},{0.3,0.2,0.1}};
+
+        Matrix m = new Matrix(d);
+        Matrix n = new Matrix(b);
+
+        m.addInPlace(n);
+        m.toString();
+    }
+
+    @Test
     public void subtractTest(){
-        double[][] d = {{1,2,3},{3,2,1}}
+        double[][] d = {{1,2,3},{3,2,1}};
         double[][] b = {{0.1,0.2,0.3},{0.3,0.2,0.1}};
 
         Matrix m = new Matrix(d);
@@ -126,8 +126,20 @@ public class MatrixDriverJUnitTest {
     }
 
     @Test
+    public void subtractInPlaceTest(){
+        double[][] d = {{1,2,3},{3,2,1}};
+        double[][] b = {{0.1,0.2,0.3},{0.3,0.2,0.1}};
+
+        Matrix m = new Matrix(d);
+        Matrix n = new Matrix(b);
+
+        m.subtractInPlace(n);
+        m.toString();
+    }
+
+    @Test
     public void scalarMultiplyTest(){
-        double[][] d = {{1,2,3},{3,2,1}}
+        double[][] d = {{1,2,3},{3,2,1}};
 
         Matrix m = new Matrix(d);
 
@@ -135,15 +147,37 @@ public class MatrixDriverJUnitTest {
     }
 
     @Test
+    public void scalarMultiplyInPlaceTest(){
+        double[][] d = {{1,2,3},{3,2,1}};
+
+        Matrix m = new Matrix(d);
+
+        m.scalarMultiplyInPlace(7);
+        m.toString();
+    }
+
+    @Test
     public void multiplyTest(){
-        double[][] d = {{1,2,3},{3,2,1}}
-        double[][] b = {{0.1,0.2,0.3},{0.3,0.2,0.1}};
+        double[][] d = {{1,2,3},{3,2,1}};
+        double[][] b = {{0.1,0.2,0.3},{0.3,0.2,0.1},{0.1,0.2,0.3}};
 
         Matrix m = new Matrix(d);
         Matrix n = new Matrix(b);
 
         m.multiply(n).toString();
     }
-}
 
- */
+    @Test
+    public void multiplyInPlaceTest(){
+        double[][] d = {{1,2,3},{3,2,1}};
+        double[][] b = {{0.1,0.2,0.3},{0.3,0.2,0.1},{0.1,0.2,0.3}};
+
+        Matrix m = new Matrix(d);
+        Matrix n = new Matrix(b);
+
+        m.multiplyInPlace(n);
+        m.toString();
+    }
+
+
+}
